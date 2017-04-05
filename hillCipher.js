@@ -8,7 +8,41 @@ var key = math.matrix([
     [6, 24, 1],
     [13, 16, 10],
     [20, 17, 15]
-])
+]);
+
+const encodingDict = {
+    "a": 0,
+    "b": 1,
+    "c": 2,
+    "d": 3,
+    "e": 4,
+    "f": 5,
+    "g": 6,
+    "h": 7,
+    "i": 8,
+    "j": 9,
+    "k": 10,
+    "l": 11,
+    "m": 12,
+    "n": 13,
+    "o": 14,
+    "p": 15,
+    "q": 16,
+    "r": 17,
+    "s": 18,
+    "t": 19,
+    "u": 20,
+    "v": 21,
+    "w": 22,
+    "x": 23,
+    "y": 24,
+    "z": 25,
+    ".": 26,
+    "?": 27,
+    " ": 28
+}
+
+const decodingDict = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ".", "?", " "];
 
 // readFiles(['hello.txt', 'world.txt'], 'utf8', (err, contents) => {
 //   if (err) {
@@ -46,15 +80,14 @@ function createEncodingKey(n = 3, max = 1000) {
 function code(key, text) {
     var block = math.size(key)._data[0];
 
-    //filter text for anything that can be coded and chunking it
-    text = text.toLowerCase().match(/[A-Z .]/gi).map(function(item, index, array) {
-        return index % block === 0 ? array.slice(index, index + block) : null;
-    }).filter(function(item) {
-        return item;
-    });
+    //filter text for anything that can be coded
+    text = text.toLowerCase().match(/[A-Z .?]/gi);
+    //padding, if required
+    text = math.mod(text.length, block) == 0 ? text : pad(text, text.length + block - math.mod(text.length, block), " ");
 
-    //padding the last chunk if required
-    text[text.length-1] = pad(text[text.length-1],block," ")
+    //chunking
+    text = math.matrix(math.reshape(text, [block, text.length / block]));
+
 
 
     return text;
