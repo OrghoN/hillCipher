@@ -2,6 +2,8 @@ const readFiles = require('read-multiple-files');
 const math = require('mathjs');
 const modulo = 29;
 
+var text = "The quick brown fox jumps over the lazy dog.?!";
+
 // readFiles(['hello.txt', 'world.txt'], 'utf8', (err, contents) => {
 //   if (err) {
 //     throw err;
@@ -35,4 +37,11 @@ function createEncodingKey(n = 3, max = 1000) {
     return math.matrix(encodingKey);
 }
 
-console.log(createEncodingKey());
+function code(key,text){
+  // var block = math.size(key);
+
+  text = text.match(/[A-Z .]/gi).join("");
+  return text;
+}
+
+console.log(code(5,text));
