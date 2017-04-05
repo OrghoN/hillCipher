@@ -3,7 +3,8 @@ const math = require('mathjs');
 const pad = require('array-pad')
 const modulo = 29;
 
-var text = "The quick brown fox jumps over the lazy dog.?!";
+var text = "The quick brown fox jumps over the lazy dog.!";
+
 var key = math.matrix([
     [6, 24, 1],
     [13, 16, 10],
@@ -56,6 +57,7 @@ function createDecodingKey(encodingKey) {
     var det = math.det(encodingKey);
     var detInv = math.xgcd(det, modulo).toArray()[1];
 
+    //creating mod inverse
     var decodingKey = math.chain(encodingKey).inv().map(function(val) {
         return math.mod((detInv * math.round(val * det)), modulo)
     }).done();
@@ -88,9 +90,24 @@ function code(key, text) {
     //chunking
     text = math.matrix(math.reshape(text, [block, text.length / block]));
 
+    //converting text to numbers
+    var codedText = math.map(text, function(val) {
+        return encodingDict[val];
+    });
 
+    //encoding
+    codedText = math.chain(key).multiply(codedText).mod(modulo).map(function(val) {
+        return decodingDict[val];
+    }).done();
 
-    return text;
+    //turning back into string
+    codedText = math.flatten(codedText).toArray().join("").trim();
+
+    return codedText;
 }
 
-console.log(code(key, text));
+key2 = createEncodingKey();
+
+console.log(code(key2, text));
+
+console.log(code(createDecodingKey(key2),code(key2, text)));
