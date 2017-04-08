@@ -53,16 +53,13 @@ const decodingDict = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l"
 //   console.log(contents);
 // });
 
-function createDecodingKey(encodingKey) {
-    var det = math.det(encodingKey);
-    var detInv = math.xgcd(det, modulo).toArray()[1];
+function adjugate(matrix) {
+    var det = math.det(matrix);
 
-    //creating mod inverse
-    var decodingKey = math.chain(encodingKey).inv().map(function(val) {
-        return math.mod((detInv * math.round(val * det)), modulo)
+    return math.chain(matrix).inv().map(function(val) {
+        return (math.round(val * det));
     }).done();
 
-    return decodingKey;
 }
 
 function createEncodingKey(n = 3, max = 1000) {
@@ -77,6 +74,17 @@ function createEncodingKey(n = 3, max = 1000) {
     }
 
     return math.matrix(encodingKey);
+}
+
+function createDecodingKey(encodingKey) {
+    var det = math.det(encodingKey);
+    var detInv = math.xgcd(det, modulo).toArray()[1];
+
+    var decodingKey = math.map(adjugate(encodingKey), function(val) {
+        return math.mod((detInv * val), modulo);
+    });
+
+    return decodingKey;
 }
 
 function code(key, text) {
@@ -110,4 +118,4 @@ key2 = createEncodingKey();
 
 console.log(code(key2, text));
 
-console.log(code(createDecodingKey(key2),code(key2, text)));
+console.log(code(createDecodingKey(key2), code(key2, text)));
