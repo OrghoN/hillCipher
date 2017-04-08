@@ -1,49 +1,10 @@
 const readFiles = require('read-multiple-files');
 const math = require('mathjs');
-const pad = require('array-pad')
-const modulo = 29;
+const pad = require('array-pad');
 
-var text = "The quick brown fox jumps over the lazy dog.!";
+const dictionary = require('./dictionary.js');
 
-var key = math.matrix([
-    [6, 24, 1],
-    [13, 16, 10],
-    [20, 17, 15]
-]);
-
-const encodingDict = {
-    "a": 0,
-    "b": 1,
-    "c": 2,
-    "d": 3,
-    "e": 4,
-    "f": 5,
-    "g": 6,
-    "h": 7,
-    "i": 8,
-    "j": 9,
-    "k": 10,
-    "l": 11,
-    "m": 12,
-    "n": 13,
-    "o": 14,
-    "p": 15,
-    "q": 16,
-    "r": 17,
-    "s": 18,
-    "t": 19,
-    "u": 20,
-    "v": 21,
-    "w": 22,
-    "x": 23,
-    "y": 24,
-    "z": 25,
-    ".": 26,
-    "?": 27,
-    " ": 28
-}
-
-const decodingDict = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", ".", "?", " "];
+var text = "Over 60 million people came to New York City last year, but this downtown yoga class offers a quiet place to go with the flow....with cats. ";
 
 // readFiles(['hello.txt', 'world.txt'], 'utf8', (err, contents) => {
 //   if (err) {
@@ -62,7 +23,7 @@ function adjugate(matrix) {
 
 }
 
-function createEncodingKey(n = 3, max = 1000) {
+function createEncodingKey(n, max) {
     var det = 0;
     var encodingKey
     while (det === 0) {
@@ -78,13 +39,26 @@ function createEncodingKey(n = 3, max = 1000) {
 
 function createDecodingKey(encodingKey) {
     var det = math.det(encodingKey);
-    var detInv = math.xgcd(det, modulo).toArray()[1];
+    var detInv = math.xgcd(det, dictionary.modulo).toArray()[1];
 
     var decodingKey = math.map(adjugate(encodingKey), function(val) {
-        return math.mod((detInv * val), modulo);
+        return math.mod((detInv * val), dictionary.modulo);
     });
 
     return decodingKey;
+}
+
+function generateKeyPair(n = 3, max = 2000) {
+    var clearText = "abcdefghijklmnopqrstuvwxyz .?";
+    var key;
+    var genText;
+
+    while (clearText.localeCompare(genText) !== 0) {
+        key = createEncodingKey(n, max);
+        genText = code(createDecodingKey(key), code(key, clearText));
+    }
+
+    return key;
 }
 
 function code(key, text) {
@@ -100,12 +74,12 @@ function code(key, text) {
 
     //converting text to numbers
     var codedText = math.map(text, function(val) {
-        return encodingDict[val];
+        return dictionary.encodingDict[val];
     });
 
     //encoding
-    codedText = math.chain(key).multiply(codedText).mod(modulo).map(function(val) {
-        return decodingDict[val];
+    codedText = math.chain(key).multiply(codedText).mod(dictionary.modulo).map(function(val) {
+        return dictionary.decodingDict[val];
     }).done();
 
     //turning back into string
@@ -114,8 +88,10 @@ function code(key, text) {
     return codedText;
 }
 
-key2 = createEncodingKey();
+key2 = generateKeyPair();
 
 console.log(code(key2, text));
 
 console.log(code(createDecodingKey(key2), code(key2, text)));
+
+// console.log(dictionary.modulo);
